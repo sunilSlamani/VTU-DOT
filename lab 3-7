@@ -1,0 +1,407 @@
+3)============================================================================================================================================================
+CREATE TABLE Employee (
+    E_id INTEGER PRIMARY KEY,
+    E_name VARCHAR(100),
+    Age INTEGER,
+    Salary DECIMAL(10, 2)
+);
+
+Step 2: Insert Five Records into the Table:
+
+INSERT INTO Employee VALUES (1, 'Braham Kumar', 30, 50000);
+INSERT INTO Employee VALUES (2, 'Shubham Kumar', 25, 60000);
+INSERT INTO Employee VALUES (3, 'Anjali Kumari', 35, 55000);
+INSERT INTO Employee VALUES (4, 'Aman Kumar', 28, 62000);
+INSERT INTO Employee VALUES (5, 'Shoaib Akhtar', 40, 70000);
+
+Step 3: Count the number of employee names from the employee table:
+
+SELECT COUNT(E_NAME) AS "NUMBER OF EMPLOYEES" 
+FROM EMPLOYEE;
+
+Step 4: Find the Maximum age from the employee table:
+
+SELECT MAX(AGE) AS "MAXIMUM AGE" 
+FROM EMPLOYEE;
+
+Step 5: Find the Minimum age from the employee table:
+
+SELECT MIN(AGE) AS "MINIMUM AGE"
+FROM EMPLOYEE;
+
+Step 6: Find salaries of employees in ascending order:
+
+SELECT E_NAME, SALARY 
+FROM EMPLOYEE 
+ORDER BY SALARY ASC;
+
+Step 7: Find grouped salaries of employees:
+
+SELECT Age, SUM(SALARY) AS "TOTAL SALARY"
+FROM EMPLOYEE
+GROUP BY AGE;
+==================================================================================================================================================================
+4)CREATE TABLE CUSTOMERS (
+    ID NUMBER PRIMARY KEY,
+    NAME VARCHAR2(100),
+    AGE NUMBER,
+    ADDRESS VARCHAR2(200),
+    SALARY NUMBER
+);
+
+Step 2: Create the Trigger:
+
+CREATE OR REPLACE TRIGGER salary_difference_trigger
+AFTER INSERT OR UPDATE OR DELETE
+ON CUSTOMERS
+FOR EACH ROW
+DECLARE
+    v_old_salary CUSTOMERS.SALARY%TYPE;
+    v_new_salary CUSTOMERS.SALARY%TYPE;
+    v_salary_diff CUSTOMERS.SALARY%TYPE;
+BEGIN
+    IF INSERTING THEN
+        v_old_salary := 0;
+        v_new_salary := :NEW.SALARY;
+    ELSIF UPDATING THEN
+        v_old_salary := :OLD.SALARY;
+        v_new_salary := :NEW.SALARY;
+    ELSIF DELETING THEN
+        v_old_salary := :OLD.SALARY;
+        v_new_salary := 0;
+    END IF;
+
+    v_salary_diff := v_new_salary - v_old_salary;
+
+    DBMS_OUTPUT.PUT_LINE('Salary difference: ' || v_salary_diff);
+END;
+
+Step 3: Test the Trigger: Now, perform INSERT, UPDATE, and DELETE operations on the CUSTOMERS table to see the trigger in action.
+
+Insert Operation:
+
+INSERT INTO CUSTOMERS 
+VALUES (1, 'Braham Kumar', 30, 'Bangalore', 8000);
+
+Update Operation:
+
+UPDATE CUSTOMERS
+SET SALARY = 6000
+WHERE ID = 1;
+
+Delete Operation:
+
+DELETE FROM CUSTOMERS
+WHERE ID = 1;
+
+=============================================================================================================================================================
+5)CREATE TABLE Employee (
+    E_id NUMBER PRIMARY KEY,
+    E_name VARCHAR2(100),
+    Age NUMBER,
+    Salary NUMBER
+);
+
+Step 2: Insert value in Employee Table:
+
+INSERT INTO EMPLOYEE VALUES (1, 'Braham Kumar', 30, 50000);
+INSERT INTO EMPLOYEE VALUES (2, 'Shubham', 32, 55000);
+INSERT INTO EMPLOYEE VALUES (3, 'Bikash', 28, 48000);
+
+Step 3: Create a Cursor:
+
+DECLARE
+
+    v_E_id Employee.E_id%TYPE;
+    v_E_name Employee.E_name%TYPE;
+    v_Age Employee.Age%TYPE;
+    v_Salary Employee.Salary%TYPE;
+    
+    CURSOR employee_cursor IS
+        SELECT E_id, E_name, Age, Salary FROM Employee;
+BEGIN
+
+    OPEN employee_cursor;
+    
+    LOOP
+        FETCH employee_cursor INTO v_E_id, v_E_name, v_Age, v_Salary;
+        
+        EXIT WHEN employee_cursor%NOTFOUND;
+
+        DBMS_OUTPUT.PUT_LINE('E_id: ' || v_E_id || ', E_name: ' || v_E_name || ', Age: ' || v_Age || ', Salary: ' || v_Salary);
+    END LOOP;
+    
+    CLOSE employee_cursor;
+END;
+
+==================================================================================================================================================
+6)CREATE TABLE N_RollCall (
+    id NUMBER,
+    name VARCHAR2(100),
+    roll_date DATE
+);
+
+Step 2: Insert data in N_RollCall Table:
+
+INSERT INTO N_RollCall VALUES (1, 'Braham Kumar', '01-22-2015');
+INSERT INTO N_RollCall VALUES (2, 'Shubham Kumar', '04-22-2016');
+INSERT INTO N_RollCall VALUES (3, 'Bikash Singh', '05-22-2017');
+
+Step 3: Create Table O_RollCall:
+
+CREATE TABLE O_RollCall (
+    id NUMBER,
+    name VARCHAR2(100),
+    roll_date DATE
+);
+
+Step 4: Insert data in O_RollCall Table:
+
+INSERT INTO O_RollCall VALUES (4, 'Amit Singh', '01-22-2015');
+INSERT INTO O_RollCall VALUES (5, 'Mukesh Kumar', '04-22-2016');
+INSERT INTO O_RollCall VALUES (6, 'Abhay Singh', '05-22-2017');
+
+Step 5: Write the PL/SQL Block:
+
+DECLARE
+    v_n_rollcall_id N_RollCall.id%TYPE;
+    v_n_rollcall_name N_RollCall.name%TYPE;
+    v_n_rollcall_date N_RollCall.roll_date%TYPE;
+    
+    CURSOR c_merge_rollcall_data IS
+        SELECT id, name, roll_date
+        FROM N_RollCall nrc
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM O_RollCall orc
+            WHERE orc.id = nrc.id
+            AND orc.name = nrc.name
+            AND orc.roll_date = nrc.roll_date
+        );
+BEGIN
+
+    OPEN c_merge_rollcall_data;
+    
+    LOOP
+        FETCH c_merge_rollcall_data INTO v_n_rollcall_id, v_n_rollcall_name, v_n_rollcall_date;
+        EXIT WHEN c_merge_rollcall_data%NOTFOUND;
+        
+        INSERT INTO O_RollCall (id, name, roll_date)
+        VALUES (v_n_rollcall_id, v_n_rollcall_name, v_n_rollcall_date);
+    END LOOP;
+    
+    CLOSE c_merge_rollcall_data;
+    
+    COMMIT;
+    
+    DBMS_OUTPUT.PUT_LINE('Data merged successfully from N_RollCall to O_RollCall.');
+EXCEPTION
+    WHEN OTHERS THEN
+
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+        ROLLBACK;
+END;
+
+Step 6: To see the output command:
+
+SELECT * FROM O_RollCall;
+
+=============================================================================================================================================================
+7)use basictask;
+
+2. Insert Operation:
+
+◉ Insert single documents:
+
+db.users.insertOne({
+      name: "Braham Kumar",
+      age: 25,
+      email: "braham@gmail.com",
+      status: "inactive"
+});
+
+◉ Insert multiple documents:
+
+db.users.insertMany([
+    {
+        name: "Braham Kumar",
+        age: 25,
+        email: "braham@gmail.com",
+        status: "inactive"
+    },
+    {
+        name: "Shubham Kumar",
+        age: 35,
+        email: "shubham@gmail.com",
+        status: "active"
+    },
+    {
+        name: "Bikash Singh",
+        age: 28,
+        email: "bikash@gmail.com",
+        status: "active"
+    },
+    {
+        name: "Shoaib Akhtar",
+        age: 28,
+        email: "shoaib@gmail.com",
+        status: "active"
+    }
+]);
+
+3. Read Query:
+
+◉ Find all documents:
+
+db.users.find();
+
+OUTPUT:
+
+[
+  {
+    _id: ObjectId('666c78f13c52fc36f3cdcdf6'),
+    name: 'Braham Kumar',
+    age: 25,
+    email: 'braham@gmail.com',
+    status: 'inactive'
+  },
+  {
+    _id: ObjectId('666c78f13c52fc36f3cdcdf7'),
+    name: 'Shubham Kumar',
+    age: 35,
+    email: 'shubham@gmail.com',
+    status: 'active'
+  },
+  {
+    _id: ObjectId('666c78f13c52fc36f3cdcdf8'),
+    name: 'Bikash Singh',
+    age: 28,
+    email: 'bikash@gmail.com',
+    status: 'active'
+  },
+  {
+    _id: ObjectId('666c78f13c52fc36f3cdcdf9'),
+    name: 'Shoaib Akhtar',
+    age: 28,
+    email: 'shoaib@gmail.com',
+    status: 'active'
+  }
+]
+
+◉ Find documents with specific criteria (e.g., find all users with age greater than 25):
+
+db.users.find({ age: { $gt: 25 } });
+
+OUTPUT:
+
+[
+  {
+    _id: ObjectId('666c78f13c52fc36f3cdcdf7'),
+    name: 'Shubham Kumar',
+    age: 35,
+    email: 'shubham@gmail.com',
+    status: 'active'
+  },
+  {
+    _id: ObjectId('666c78f13c52fc36f3cdcdf8'),
+    name: 'Bikash Singh',
+    age: 28,
+    email: 'bikash@gmail.com',
+    status: 'active'
+  },
+  {
+    _id: ObjectId('666c78f13c52fc36f3cdcdf9'),
+    name: 'Shoaib Akhtar',
+    age: 28,
+    email: 'shoaib@gmail.com',
+    status: 'active'
+  }
+]
+
+4. Update Query:
+
+◉ Update a single document:
+
+db.users.updateOne(
+  { name: "Bikash Singh" },
+  { $set: { age: 31 } }
+);
+
+db.users.find({ age: { $gt: 31 } });
+
+OUTPUT:
+
+[
+  {
+    _id: ObjectId('666c78f13c52fc36f3cdcdf7'),
+    name: 'Shubham Kumar',
+    age: 35,
+    email: 'shubham@gmail.com',
+    status: 'active'
+  }
+]
+
+◉ Update multiple documents:
+
+db.users.updateMany(
+  { age: { $gt: 28 } },
+  { $set: { status: "inactive" } }
+);
+
+db.users.find({ age: { $gt: 28 } });
+
+OUTPUT:
+
+[
+  {
+    _id: ObjectId('666c78f13c52fc36f3cdcdf7'),
+    name: 'Shubham Kumar',
+    age: 35,
+    email: 'shubham@gmail.com',
+    status: 'inactive'
+  },
+  {
+    _id: ObjectId('666c78f13c52fc36f3cdcdf8'),
+    name: 'Bikash Singh',
+    age: 31,
+    email: 'bikash@gmail.com',
+    status: 'inactive'
+  }
+]
+
+5. Delete Query:
+
+◉ Delete a single document:
+
+db.users.deleteOne({ name: "Bikash Singh" });
+
+◉ Delete multiple documents:
+
+db.mycollection.deleteMany({ age: { $gt: 28 } });
+
+5. Basic Queries:
+
+◉ Count documents in a collection:
+
+db.users.count();
+
+◉ Sorting documents:
+
+db.users.find().sort({ age: 1 });  // Ascending order
+db.users.find().sort({ age: -1 }); // Descending order
+
+◉ Limiting the number of documents returned:
+
+db.users.find().limit(5);
+
+◉ Aggregation queries (e.g., group by and aggregate functions):
+
+db.users.aggregate([
+  { $group: { _id: "$age", count: { $sum: 1 } } }
+]);
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$##############################&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&***************************************************************
+
+
+
+
+

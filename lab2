@@ -1,0 +1,48 @@
+CREATE TABLE Employee (
+    EMPNO INTEGER PRIMARY KEY,
+    ENAME VARCHAR(50),
+    JOB VARCHAR(50),
+    MGR INTEGER,
+    SAL DECIMAL(10, 2)
+);
+
+Step 2: Add a Column for Commission:
+
+ALTER TABLE Employee
+ADD COMMISSION DECIMAL(10, 2);
+
+Step 3: Insert Five Records into the Table:
+
+INSERT INTO Employee VALUES (101, 'Braham Kumar', 'Manager', NULL, 80000.00, 5000.00);
+INSERT INTO Employee VALUES (102, 'Shubham Kumar', 'Analyst', 101, 60000.00, 3000.00);
+INSERT INTO Employee VALUES (103, 'Aman Kumar', 'Clerk', 102, 40000.00, 1000.00);
+INSERT INTO Employee VALUES (104, 'Rajan Gupta', 'Salesman', 101, 70000.00, 4000.00);
+INSERT INTO Employee VALUES (105, 'Shiv Yadav', 'Clerk', 102, 38000.00, 800.00);
+
+Step 4: Update the Column Details of Job:
+
+UPDATE Employee
+SET JOB = 'Senior Manager'
+WHERE EMPNO = 101;
+
+UPDATE Employee
+SET JOB = 'Senior Analyst'
+WHERE EMPNO = 102;
+
+UPDATE Employee
+SET JOB = 'Office Clerk'
+WHERE EMPNO = 103 OR EMPNO = 105;
+
+UPDATE Employee
+SET JOB = 'Sales Executive'
+WHERE EMPNO = 104;
+
+Step 5: Rename the Column of Employee Table:
+
+ALTER TABLE Employee
+RENAME COLUMN ENAME TO EMP_NAME;
+
+Step 6: Delete the Employee Whose EMPNO is 105:
+
+DELETE FROM Employee
+WHERE EMPNO = 105;

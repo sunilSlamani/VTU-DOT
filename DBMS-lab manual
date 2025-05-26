@@ -1,0 +1,66 @@
+CREATE USER emp_user IDENTIFIED BY password;
+
+-- Grant necessary privileges to emp_user (adjust privileges as needed)
+GRANT CONNECT, RESOURCE, DBA TO emp_user;
+
+Step 2: Create the Employee table and insert records using rollback:
+
+-- Connect as the newly created user
+CONNECT emp_user/password
+
+
+-- Create the Employee table
+CREATE TABLE Employee (
+    EMPNO NUMBER,
+    ENAME VARCHAR2(50),
+    JOB VARCHAR2(50),
+    MANAGER_NO NUMBER,
+    SAL NUMBER,
+    COMMISSION NUMBER
+);
+
+
+-- Insert three records into the Employee table
+INSERT INTO Employee (EMPNO, ENAME, JOB, MANAGER_NO, SAL, COMMISSION)
+VALUES (1, 'John Doe', 'Manager', NULL, 5000, 1000);
+
+INSERT INTO Employee (EMPNO, ENAME, JOB, MANAGER_NO, SAL, COMMISSION)
+VALUES (2, 'Jane Smith', 'Developer', 1, 4000, NULL);
+
+INSERT INTO Employee (EMPNO, ENAME, JOB, MANAGER_NO, SAL, COMMISSION)
+VALUES (3, 'Michael Brown', 'Analyst', 1, 4500, 500);
+
+
+-- Use rollback to undo the insertions
+ROLLBACK;
+
+
+-- Check that the records were rolled back (should return 0 rows)
+SELECT * FROM Employee;
+
+Step 4: Add primary key constraint and not null constraint:
+
+-- Alter table to add primary key constraint on EMPNO
+ALTER TABLE Employee
+ADD CONSTRAINT pk_employee PRIMARY KEY (EMPNO);
+
+
+
+-- Alter table to add NOT NULL constraints on required columns
+ALTER TABLE Employee
+MODIFY (ENAME VARCHAR2(50) NOT NULL,
+        JOB VARCHAR2(50) NOT NULL,
+        SAL NUMBER NOT NULL);
+
+Step 5: Insert null values to the employee table and verify the result:
+
+-- Attempt to insert a record with a NULL value in a NOT NULL column (ENAME)
+INSERT INTO Employee (EMPNO, ENAME, JOB, MANAGER_NO, SAL, COMMISSION)
+VALUES (4, NULL, 'Tester', 2, 3000, 200);
+
+
+-- This insert will fail due to the NOT NULL constraint on ENAME
+
+
+-- Check the result by querying the table
+SELECT * FROM Employee;
